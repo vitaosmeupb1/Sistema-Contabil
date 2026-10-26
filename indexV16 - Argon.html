@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anjos Gestão Empresarial</title>
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --bg-sidebar: #0f172a;
+            --sidebar-hover: #1e293b;
+            --sidebar-text: #94a3b8;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --white: #ffffff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { background-color: var(--bg-body); color: var(--text-dark); display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+        #app-container { display: flex; width: 100%; height: 100%; }
+        
+        /* LOGIN PREMIUM LAYOUT */
+        #app-container.login-mode { background: #e2e8f0; justify-content: center; align-items: center; }
+        #app-container.login-mode .sidebar, #app-container.login-mode .topbar { display: none; }
+        #app-container.login-mode .main-content { padding: 0; display: flex; justify-content: center; align-items: center; background: transparent; }
+        
+        #login-screen { 
+            display: none; width: 100%; max-width: 800px; background: var(--white); border-radius: 12px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; animation: loginFadeIn 0.6s ease-out forwards; 
+        }
+        #login-screen.active { display: flex; }
+        @keyframes loginFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .login-left { flex: 1; background: linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%); padding: 50px; color: var(--white); display: flex; flex-direction: column; justify-content: center; }
+        .login-left h1 { font-size: 28px; color: var(--white); margin-bottom: 15px; }
+        .login-left p { color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; }
+        .login-right { flex: 1; padding: 50px; display: flex; flex-direction: column; justify-content: center; background: var(--white); }
+        .login-right h2 { font-size: 22px; margin-bottom: 25px; color: var(--text-dark); }
+        
+        /* SIDEBAR ESTRUTURA */
+        .sidebar { width: 220px; background-color: var(--bg-sidebar); color: var(--white); display: flex; flex-direction: column; height: 100vh; flex-shrink: 0; transition: margin-left 0.3s ease; }
+        .sidebar.collapsed { margin-left: -220px; }
+        
+        .sidebar-brand { padding: 18px 15px; font-size: 16px; font-weight: 700; color: var(--white); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px; line-height: 1.2; }
+        .sidebar-brand span { font-size: 20px; color: var(--primary); }
+        .sidebar-menu { flex-grow: 1; padding: 15px 0; overflow-y: auto; }
+        .menu-item { padding: 10px 15px; color: var(--sidebar-text); display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; font-weight: 500; }
+        .menu-item:hover, .menu-item.active { background-color: var(--sidebar-hover); color: var(--white); border-left: 4px solid var(--primary); }
+        .sidebar-footer { padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
+        
+        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* TOPBAR & TOGGLE BTN */
+        .topbar { height: 55px; background-color: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; flex-shrink: 0; }
+        .topbar-left { display: flex; align-items: center; gap: 15px; }
+        #btn-toggle-sidebar { font-size: 22px; cursor: pointer; color: var(--text-muted); transition: color 0.2s; user-select: none; }
+        #btn-toggle-sidebar:hover { color: var(--primary); }
+        
+        .topbar-title { font-size: 15px; font-weight: 600; color: var(--text-dark); }
+        .topbar-filters { display: flex; align-items: center; gap: 12px; }
+        .filter-group { display: flex; align-items: center; gap: 8px; }
+        .filter-group label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 20px; }
+        .screen { display: none; max-width: 1300px; margin: 0 auto; animation: fadeIn 0.3s; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1, h2, h3, h4 { color: var(--text-dark); margin-bottom: 12px; font-weight: 600; }
+        h3 { font-size: 15px; }
+        p { color: var(--text-muted); font-size: 12px; }
+        
+        input, select { width: 100%; padding: 8px 10px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; color: var(--text-dark); transition: border 0.2s; background: var(--bg-body); outline: none;}
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); background: var(--white); }
+        input.uppercase { text-transform: uppercase; }
+        
+        button { padding: 8px 14px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 12px; color: var(--white); background-color: var(--primary); transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        button:hover { background-color: var(--primary-hover); }
+        button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.7; cursor: not-allowed; }
+        button.danger { background-color: var(--danger); }
+        button.danger:hover { background-color: var(--danger-hover); }
+        button.warning { background-color: var(--warning); }
+        button.warning:hover { opacity: 0.9; }
+        button.success { background-color: var(--success); }
+        button.success:hover { opacity: 0.9; }
+        button.secondary { background-color: var(--white); color: var(--text-dark); border: 1px solid var(--border); }
+        button.secondary:hover { background-color: var(--bg-body); }
+        button.small { padding: 5px 10px; font-size: 11px; }
+
+        .panel { background: var(--white); padding: 18px; border-radius: 8px; margin-bottom: 18px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        .panel-header h3 { margin-bottom: 0; }
+
+        .input-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+        .input-row > div, .input-row > input, .input-row > select { flex: 1; min-width: 140px; }
+        .input-row button { height: 35px; }
+
+        /* GRID E CARDS DE CLIENTE */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; }
+        .client-card { background: var(--white); padding: 15px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; gap: 4px; position: relative; }
+        .client-card:hover { border-color: var(--primary); box-shadow: 0 3px 8px rgba(0,0,0,0.05); transform: translateY(-2px); }
+        
+        .client-card h4 { 
+            margin-bottom: 4px; font-size: 14px; color: var(--primary); 
+            padding-right: 65px; line-height: 1.3; word-break: break-word; 
+        }
+        
+        .client-card p { font-size: 12px; margin: 0; }
+        .client-card .date-inc { position: absolute; top: 15px; right: 15px; font-size: 9px; color: var(--text-muted); font-weight: bold;}
+        
+        .client-card.concluido { border-left: 4px solid var(--success); background-color: #f0fdf4; }
+        .client-card.atrasado { border-left: 4px solid var(--danger); background-color: #fef2f2; }
+        .client-card.hoje { border-left: 4px solid var(--warning); background-color: #fffbeb; }
+
+        .badge-baixado { background: var(--danger); color: white; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; margin-left: 8px; vertical-align: middle; }
+
+        .dashboard-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+        .settings-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        @media (max-width: 900px) { .dashboard-layout { grid-template-columns: 1fr; } }
+
+        .upcoming-list { max-height: calc(100vh - 170px); overflow-y: auto; padding-right: 5px; }
+        .upcoming-item { background: var(--bg-body); padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid var(--primary); display: flex; flex-direction: column; gap: 4px; }
+        .upcoming-item.overdue { border-left-color: var(--danger); background: #fef2f2; }
+        .upcoming-item .cli-nome { font-weight: 700; font-size: 13px; color: var(--text-dark); }
+        .upcoming-item .ob-nome { font-size: 12px; color: var(--text-muted); }
+        .upcoming-item .date-badge { font-size: 11px; font-weight: 600; padding: 3px 6px; border-radius: 4px; display: inline-block; width: fit-content; background: #e0f2fe; color: #0369a1; }
+        .upcoming-item.overdue .date-badge { background: #fee2e2; color: #b91c1c; }
+
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--border); transition: background 0.2s; font-size: 12px; }
+        .list-item:hover { background: var(--bg-body); }
+        .list-item:last-child { border-bottom: none; }
+        .list-actions { display: flex; gap: 6px; }
+        
+        .check-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 5px; margin-bottom: 8px; border: 1px solid var(--border); transition: 0.2s; font-size: 13px; }
+        .check-item:hover { border-color: var(--primary); }
+        .check-item .check-left { display: flex; align-items: center; }
+        .check-item input[type="checkbox"] { width: 16px; height: 16px; margin: 0 12px 0 0; cursor: pointer; accent-color: var(--primary); }
+        
+        .check-item.concluido { background: #f8fafc; opacity: 0.5; }
+        .check-item.concluido span { text-decoration: none; color: var(--text-muted); }
+
+        .note-card { padding: 12px; border-radius: 6px; border-left: 3px solid var(--warning); display: flex; flex-direction: column; gap: 8px; background: #fffbeb; font-size: 12px; word-break: break-word; }
+        .note-card.concluida { background: #f0fdf4; border-left-color: var(--success); opacity: 0.8; }
+        .note-card.fixa { background: #eff6ff; border-left-color: var(--primary); }
+        .note-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.05); }
+        .client-panels-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; align-items: start; }
+
+        /* MODAIS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--white); padding: 22px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); animation: fadeIn 0.2s ease-out; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background-color: var(--sidebar-hover); color: var(--white); padding: 12px 18px; border-radius: 6px; font-weight: 500; font-size: 13px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); animation: slideIn 0.3s ease-in-out; border-left: 4px solid var(--warning); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <div id="app-container" class="login-mode">
+        
+        <aside class="sidebar collapsed">
+            <div class="sidebar-brand">
+                <span>✦</span> Anjos Gestão
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-item active" onclick="navigate('main-screen', this)">
+                    📊 Dashboard
+                </div>
+                <div class="menu-item" onclick="navigate('settings-screen', this)">
+                    ⚙️ Configurações
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="menu-item" id="btn-logout" style="color: var(--danger); padding: 0;">
+                    🚪 Sair do Sistema
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-wrapper">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <span id="btn-toggle-sidebar" title="Expandir/Recolher Menu">☰</span>
+                    <div class="topbar-title" id="page-title">Dashboard</div>
+                </div>
+                <div class="topbar-filters" id="global-filters" style="display: none;">
+                    <div class="filter-group">
+                        <label>Apuração:</label>
+                        <input type="month" id="periodo-apuracao" style="margin: 0; width: auto; height: 32px; padding: 4px 8px;">
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <!-- TELA DE LOGIN -->
+                <div id="login-screen" class="screen active">
+                    <div class="login-left">
+                        <h1>Anjos Gestão</h1>
+                        <p>Sistema Profissional para Controle de Obrigações, Gestão de Clientes e Apurações Contábeis.</p>
+                    </div>
+                    <div class="login-right">
+                        <h2>Acesso ao Sistema</h2>
+                        <input type="email" id="email" placeholder="Seu E-mail">
+                        <input type="password" id="senha" placeholder="Sua Senha">
+                        <button id="btn-login" style="width: 100%; height: 42px; font-size: 14px; margin-top: 10px;">Entrar no Sistema</button>
+                    </div>
+                </div>
+
+                <!-- TELA PRINCIPAL (DASHBOARD) -->
+                <div id="main-screen" class="screen">
+                    <div class="dashboard-layout">
+                        <div class="dashboard-main">
+                            <div class="panel">
+                                <h3>Novo Cliente (Empresa)</h3>
+                                <div class="input-row">
+                                    <input type="text" id="cli-cnpj" placeholder="CNPJ" maxlength="18">
+                                    <input type="text" id="cli-nome" placeholder="Nome / Razão Social" class="uppercase" style="flex: 2;">
+                                    <select id="cli-regime" style="flex: 1;">
+                                        <option value="">Regime (Obrigatório)...</option>
+                                    </select>
+                                    <input type="text" id="cli-wpp" placeholder="WhatsApp" maxlength="15">
+                                    <input type="date" id="cli-data">
+                                    <button id="btn-add-client">Cadastrar</button>
+                                </div>
+                            </div>
+
+                            <div class="panel">
+                                <div class="panel-header">
+                                    <h3>Carteira de Clientes <span id="client-counter" style="font-weight: normal; font-size: 12px; color: var(--text-muted); margin-left: 5px;">(0 totais)</span></h3>
+                                    <button type="button" id="btn-pgmei">PGMEI</button>
+                                </div>
+                                <div id="client-list" class="card-grid"></div>
+                            </div>
+                        </div>
+
+                        <!-- Próximas Obrigações -->
+                        <div class="panel">
+                            <div class="panel-header" style="margin-bottom: 12px;">
+                                <h3 style="font-size: 14px;">Pendências do Mês</h3>
+                            </div>
+                            <p style="font-size: 11px; margin-bottom: 12px;">Filtro: <b>Período de Apuração</b></p>
+                            <div class="upcoming-list" id="upcoming-tasks-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TELA DE CONFIGURAÇÕES -->
+                <div id="settings-screen" class="screen">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Controle de Exercício (Ano Vigente)</h3>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="ano-vigente" style="margin: 0; width: 180px;">
+                                    <option value="NOVO_ANO">⭐ Criar Novo Ano...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-layout">
+                        <!-- Tipos de MEI -->
+                        <div class="panel">
+                            <h3>Tipos de MEI / Atividade</h3>
+                            <div class="input-row" style="margin-bottom: 15px;">
+                                <input type="text" id="tipo-mei-nome" placeholder="Ex: COMÉRCIO" class="uppercase">
+                                <button id="btn-add-tipo">Add</button>
+                            </div>
+                            <div id="lista-tipos-mei" style="border: 1px solid var(--border); border-radius: 6px; max-height: 250px; overflow-y: auto;"></div>
+                        </div>
+
+                        <!-- Regimes de Empresa -->
+                        <div class="panel">
+                            <h3>Regimes de Empresa</h3>
+                            <div class="input-row" style="margin-bottom: 15px;">
+                                <input type="text" id="regime-nome" placeholder="Ex: SIMPLES NACIONAL" class="uppercase">
+                                <button id="btn-add-regime">Add</button>
+                            </div>
+                            <div id="lista-regimes" style="border: 1px solid var(--border); border-radius: 6px; max-height: 250px; overflow-y: auto;"></div>
+                        </div>
+
+                        <!-- Obrigações Fiscais -->
+                        <div class="panel">
+                            <h3>Obrigações Fiscais</h3>
+                            <input type="text" id="ob-nome" placeholder="NOME DA OBRIGAÇÃO" class="uppercase">
+                            <div class="input-row" style="margin-bottom: 15px;">
+                                <select id="ob-tipo" style="flex: 1;">
+                                    <option value="NENHUM">Sem Recorrência</option>
+                                    <option value="MENSAL">Mensal</option>
+                                    <option value="ANUAL">Anual</option>
+                                </select>
+                                <input type="number" id="ob-dia-numero" placeholder="Dia (Ex: 10)" min="1" max="31" style="flex: 1;">
+                                <input type="text" id="ob-dia-data" placeholder="DD/MM/AAAA" style="display: none; flex: 1;" maxlength="10">
+                                <button id="btn-add-obrigacao">Salvar</button>
+                            </div>
+                            <div id="lista-obrigacoes" style="border: 1px solid var(--border); border-radius: 6px; max-height: 250px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TELA DO CLIENTE -->
+                <div id="client-screen" class="screen">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <button class="secondary small" onclick="navigate('main-screen')">← Voltar</button>
+                            <span id="client-info-cnpj" style="margin-left: 5px; font-size: 13px; color: var(--primary); font-weight: 600;"></span>
+                            <span id="client-info-data" style="font-size: 13px; color: var(--text-muted); font-weight: 600;"></span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button id="btn-toggle-baixa" class="warning small" onclick="toggleBaixaClient()">🛑 Baixar CNPJ</button>
+                            <button class="secondary small" onclick="openEditClient()">✏️ Editar Dados</button>
+                            <button class="danger small" onclick="deleteClient()">🗑️ Excluir</button>
+                        </div>
+                    </div>
+                    
+                    <div class="client-panels-grid">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>Obrigações do Mês (<span id="client-month-label"></span>)</h3>
+                            </div>
+                            
+                            <div class="input-row" style="margin-bottom: 15px;">
+                                <select id="select-add-ob" style="flex: 2; margin-bottom: 0;">
+                                    <option value="">Selecione uma obrigação...</option>
+                                </select>
+                                <button id="btn-add-ob-client">Vincular</button>
+                            </div>
+                            
+                            <div id="client-obrigacoes"></div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>📌 Anotações Fixas</h3>
+                                <span style="font-size: 11px; color: var(--primary); background: #eff6ff; padding: 3px 8px; border-radius: 4px; font-weight: 600;">Essenciais • Todos os meses</span>
+                            </div>
+                            <input type="hidden" id="nota-fixa-edit-id">
+                            <div class="input-row" style="margin-bottom: 15px;">
+                                <input type="text" id="nota-fixa-texto" placeholder="Informação essencial da empresa..." style="flex: 3; margin-bottom: 0;">
+                                <button id="btn-add-nota-fixa">Fixar</button>
+                            </div>
+                            <div id="client-notas-fixas" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>Anotações e Histórico</h3>
+                            </div>
+                            <input type="hidden" id="nota-edit-id">
+                            <div class="input-row" style="margin-bottom: 15px;">
+                                <input type="text" id="nota-texto" placeholder="Digite uma anotação..." style="flex: 3; margin-bottom: 0;">
+                                <button id="btn-add-nota">Registrar</button>
+                            </div>
+                            <div id="client-notas" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL: CONCLUIR OBRIGAÇÃO COM DATA -->
+    <div class="modal-overlay" id="modal-conclusao">
+        <div class="modal-content" style="max-width: 300px;">
+            <h3 style="margin-bottom: 5px;">Concluir Obrigação</h3>
+            <p style="margin-bottom: 15px;">Informe a data de entrega/conclusão:</p>
+            <input type="date" id="data-realizado">
+            <div class="modal-actions">
+                <button class="secondary" onclick="cancelarConclusao()">Cancelar</button>
+                <button id="btn-confirmar-conclusao">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDITAR CLIENTE -->
+    <div class="modal-overlay" id="modal-client">
+        <div class="modal-content">
+            <h3>Editar Cliente</h3>
+            <label style="font-size: 11px; font-weight: bold; color: var(--text-muted);">CNPJ</label>
+            <input type="text" id="edit-cli-cnpj" placeholder="CNPJ" maxlength="18">
+            <label style="font-size: 11px; font-weight: bold; color: var(--text-muted);">Razão Social / Nome</label>
+            <input type="text" id="edit-cli-nome" class="uppercase" placeholder="Nome">
+            <label style="font-size: 11px; font-weight: bold; color: var(--text-muted);">Regime de Empresa</label>
+            <select id="edit-cli-regime">
+                <!-- Preenchido via JS -->
+            </select>
+            <label style="font-size: 11px; font-weight: bold; color: var(--text-muted);">WhatsApp</label>
+            <input type="text" id="edit-cli-wpp" placeholder="WhatsApp" maxlength="15">
+            <label style="font-size: 11px; font-weight: bold; color: var(--text-muted);">Data de Início</label>
+            <input type="date" id="edit-cli-data">
+            <div class="modal-actions">
+                <button class="secondary" onclick="closeModals()">Cancelar</button>
+                <button id="btn-save-edit-client">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDITAR TIPO MEI / OBRIGAÇÃO / REGIME -->
+    <div class="modal-overlay" id="modal-tipo">
+        <div class="modal-content">
+            <h3 id="modal-title-generic">Editar Item</h3>
+            <input type="hidden" id="edit-generic-id">
+            <input type="hidden" id="edit-generic-type">
+            <input type="text" id="edit-generic-nome" class="uppercase">
+            <div class="modal-actions"><button class="secondary" onclick="closeModals()">Cancelar</button><button id="btn-save-edit-generic">Salvar</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-obrigacao">
+        <div class="modal-content">
+            <h3>Editar Obrigação</h3>
+            <input type="hidden" id="edit-ob-id"><input type="text" id="edit-ob-nome" class="uppercase" placeholder="Nome">
+            <select id="edit-ob-tipo"><option value="NENHUM">Sem Recorrência</option><option value="MENSAL">Mensal</option><option value="ANUAL">Anual</option></select>
+            <input type="number" id="edit-ob-dia-numero" placeholder="Dia fixo (Ex: 10)" min="1" max="31">
+            <input type="text" id="edit-ob-dia-data" placeholder="DD/MM/AAAA" style="display: none;" maxlength="10">
+            <div class="modal-actions"><button class="secondary" onclick="closeModals()">Cancelar</button><button id="btn-save-edit-ob">Salvar</button></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, onSnapshot, updateDoc, deleteField, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCifMtZqYr_oQAiVPSRF6UPycqnDnnchNE",
+            authDomain: "contabilanjos-f8fac.firebaseapp.com",
+            projectId: "contabilanjos-f8fac",
+            storageBucket: "contabilanjos-f8fac.firebasestorage.app",
+            messagingSenderId: "173734286501",
+            appId: "1:173734286501:web:3ad4d688132c690ba7694c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        setPersistence(auth, browserSessionPersistence).catch(err => console.error(err));
+
+        let currentClientId = null;
+        let globalObrigacoes = [];
+        let globalClientes = [];
+        let globalRegimes = [];
+        let anoAtual = "2026";
+        let previousYear = "2026";
+        let pendingConclusao = null; 
+        let isFirstLoad = true;
+
+        // CONTROLE DO MENU LATERAL
+        document.getElementById('btn-toggle-sidebar').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+        });
+
+        // BOTÃO PGMEI NA TELA INICIAL
+        document.getElementById('btn-pgmei').addEventListener('click', () => {
+            window.open('https://www8.receita.fazenda.gov.br/SimplesNacional/Aplicacoes/ATSPO/pgmei.app/Identificacao', '_blank', 'noopener,noreferrer');
+        });
+
+        // FUNÇÕES DE NOTIFICAÇÃO (TOAST) E CÓPIA DE CNPJ
+        function showToast(mensagem) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeftColor = 'var(--success)';
+            toast.innerText = mensagem;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 2500);
+        }
+
+        async function copyTextToClipboard(texto) {
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(texto);
+                    return;
+                }
+            } catch (err) {}
+            const tempInput = document.createElement('textarea');
+            tempInput.value = texto;
+            tempInput.style.position = 'fixed';
+            tempInput.style.opacity = '0';
+            document.body.appendChild(tempInput);
+            tempInput.focus();
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {}
+            document.body.removeChild(tempInput);
+        }
+
+        // LÓGICA DE OBRIGAÇÕES AUTOMÁTICAS (MENSAIS E ANUAIS) POR PERÍODO
+        function isObrigacaoAutomaticaNoPeriodo(ob, periodo) {
+            if (!ob || !periodo) return false;
+            if (ob.tipo === 'MENSAL') return true;
+            if (ob.tipo === 'ANUAL' && ob.dataFixa) {
+                const [selYear, selMonth] = periodo.split('-').map(Number);
+                const parts = ob.dataFixa.split('/').map(Number);
+                if (parts.length === 3) {
+                    return parts[1] === selMonth && parts[2] === selYear;
+                } else if (parts.length === 2) {
+                    return parts[1] === selMonth;
+                }
+            }
+            return false;
+        }
+
+        function getObrigacoesClientePeriodo(clientData, periodo) {
+            const obsSalvas = (clientData.periodos && clientData.periodos[periodo]) || {};
+            const resultado = {};
+
+            globalObrigacoes.forEach(ob => {
+                if (isObrigacaoAutomaticaNoPeriodo(ob, periodo)) {
+                    const salvo = obsSalvas[ob.id];
+                    if (salvo && salvo.removido === true) return;
+                    resultado[ob.id] = salvo !== undefined ? salvo : false;
+                }
+            });
+
+            Object.keys(obsSalvas).forEach(obId => {
+                const salvo = obsSalvas[obId];
+                if (salvo && salvo.removido === true) return;
+                if (!(obId in resultado)) {
+                    resultado[obId] = salvo;
+                }
+            });
+
+            return resultado;
+        }
+
+        // ATUALIZADOR GLOBAL DE CLIENTES (Para refletir mudanças nas notas)
+        async function pingClientUpdate(clientId) {
+            if(clientId) await updateDoc(doc(db, "clientes", clientId), { _lastUpdate: new Date().getTime() });
+        }
+
+        // MÁSCARAS
+        function aplicaMascaraCNPJ(e) {
+            let v = e.target.value.replace(/\D/g, "");                           
+            v = v.replace(/^(\d{2})(\d)/, "$1.$2"); v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3"); 
+            v = v.replace(/\.(\d{3})(\d)/, ".$1/$2"); v = v.replace(/(\d{4})(\d)/, "$1-$2");              
+            e.target.value = v;
+        }
+        function aplicaMascaraWPP(e) {
+            let v = e.target.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2"); v = v.replace(/(\d)(\d{4})$/, "$1-$2"); e.target.value = v;
+        }
+        document.getElementById('cli-cnpj').addEventListener('input', aplicaMascaraCNPJ);
+        document.getElementById('edit-cli-cnpj').addEventListener('input', aplicaMascaraCNPJ);
+        document.getElementById('cli-wpp').addEventListener('input', aplicaMascaraWPP);
+        document.getElementById('edit-cli-wpp').addEventListener('input', aplicaMascaraWPP);
+
+        // INICIALIZAÇÃO E AVISO DO PERÍODO DE APURAÇÃO
+        const now = new Date();
+        const periodoInput = document.getElementById('periodo-apuracao');
+        periodoInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        let lastValidPeriod = periodoInput.value;
+
+        // LÓGICA DE APURAÇÃO INTELIGENTE NO CARREGAMENTO
+        function checkAndSetInitialPeriod() {
+            if(!isFirstLoad) return;
+            
+            let oldestPendingPeriod = null;
+            globalClientes.forEach(cli => {
+                if (cli.mesBaixa) return; // Ignora baixados no cálculo global
+                if(cli.periodos) {
+                    Object.keys(cli.periodos).forEach(periodo => {
+                        const obs = cli.periodos[periodo];
+                        let hasPending = false;
+                        for(let obId in obs) {
+                            const status = obs[obId];
+                            const isConcluido = status === true || status?.concluido === true || status?.removido === true;
+                            if(!isConcluido) hasPending = true;
+                        }
+                        if(hasPending) {
+                            if(!oldestPendingPeriod || periodo < oldestPendingPeriod) {
+                                oldestPendingPeriod = periodo;
+                            }
+                        }
+                    });
+                }
+            });
+
+            if(oldestPendingPeriod) {
+                periodoInput.value = oldestPendingPeriod;
+                lastValidPeriod = oldestPendingPeriod;
+            }
+            isFirstLoad = false;
+        }
+
+        periodoInput.addEventListener('change', (e) => {
+            const newValue = e.target.value;
+            
+            if (newValue > lastValidPeriod) {
+                let hasPending = false;
+                for (let cli of globalClientes) {
+                    if (cli.mesBaixa && cli.mesBaixa < lastValidPeriod) continue;
+                    const obs = getObrigacoesClientePeriodo(cli, lastValidPeriod);
+                    for (let obId in obs) {
+                        const status = obs[obId];
+                        const isConcluido = status === true || status?.concluido === true;
+                        if (!isConcluido) { hasPending = true; break; }
+                    }
+                    if (hasPending) break;
+                }
+
+                if (hasPending) {
+                    alert(`⚠️ AVISO: Você possui obrigações pendentes no período de ${lastValidPeriod}.\nVocê está avançando a apuração com pendências em aberto.`);
+                }
+            }
+
+            lastValidPeriod = newValue;
+            renderClientList();      
+            renderUpcomingTasks();   
+            if (currentClientId) renderClientObligations(); 
+        });
+
+        window.navigate = (screenId, menuElement = null) => {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (menuElement) {
+                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+                menuElement.classList.add('active');
+            }
+            const titles = { 'main-screen': 'Dashboard Geral', 'settings-screen': 'Configurações do Sistema' };
+            if(screenId !== 'client-screen') {
+                document.getElementById('page-title').innerText = titles[screenId] || '';
+                currentClientId = null;
+            }
+
+            const filters = document.getElementById('global-filters');
+            if(screenId === 'settings-screen' || screenId === 'login-screen') {
+                filters.style.display = 'none';
+            } else if(auth.currentUser) {
+                filters.style.display = 'flex';
+            }
+        };
+
+        window.closeModals = () => document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+
+        // LOGIN
+        const btnLogin = document.getElementById('btn-login');
+        const loginInputs = [document.getElementById('email'), document.getElementById('senha')];
+        function execLogin() { 
+            btnLogin.innerHTML = '🔄 Acessando...';
+            btnLogin.disabled = true;
+            signInWithEmailAndPassword(auth, loginInputs[0].value, loginInputs[1].value).catch(() => {
+                alert("Erro: Credenciais inválidas.");
+                btnLogin.innerHTML = 'Entrar no Sistema';
+                btnLogin.disabled = false;
+            }); 
+        }
+        btnLogin.addEventListener('click', execLogin);
+        loginInputs.forEach(input => input.addEventListener('keypress', (e) => { if (e.key === 'Enter') execLogin(); }));
+        
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            btnLogin.innerHTML = 'Entrar no Sistema';
+            btnLogin.disabled = false;
+            signOut(auth);
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            const container = document.getElementById('app-container');
+            if (user) {
+                container.classList.remove('login-mode'); 
+                navigate('main-screen', document.querySelector('.menu-item'));
+                loadAnosSistema(); 
+            } else {
+                container.classList.add('login-mode'); 
+                navigate('login-screen');
+            }
+        });
+
+        // ================= SISTEMA DE ANOS =================
+        function loadAnosSistema() {
+            onSnapshot(collection(db, "anos_sistema"), (snapshot) => {
+                const select = document.getElementById('ano-vigente');
+                const optNovo = select.querySelector('option[value="NOVO_ANO"]');
+                select.innerHTML = '';
+                let anos = [];
+                snapshot.forEach(d => anos.push(d.id));
+                if(anos.length === 0) { setDoc(doc(db, "anos_sistema", "2026"), { ativo: true }); anos.push("2026"); }
+                anos.sort().forEach(a => { const opt = document.createElement('option'); opt.value = a; opt.text = a; select.appendChild(opt); });
+                select.appendChild(optNovo);
+                if(anos.includes(anoAtual)) select.value = anoAtual;
+                else { anoAtual = anos[0]; select.value = anoAtual; }
+                previousYear = anoAtual;
+                loadDashboardData(); 
+                loadSettingsData();
+            });
+        }
+
+        document.getElementById('ano-vigente').addEventListener('change', async (e) => {
+            const val = e.target.value;
+            if (val === 'NOVO_ANO') {
+                let anoNovo = prompt("Digite o novo ano (ex: 2027):");
+                if(anoNovo && !isNaN(anoNovo) && anoNovo.length === 4) {
+                    const anoAntigo = previousYear; anoAtual = anoNovo; previousYear = anoNovo;
+                    await setDoc(doc(db, "anos_sistema", anoNovo), { ativo: true });
+                    const tSnap = await getDocs(collection(db, `configuracoes/${anoAntigo}/tipos_mei`));
+                    tSnap.forEach(async (docSnap) => await setDoc(doc(db, `configuracoes/${anoNovo}/tipos_mei`, docSnap.id), docSnap.data()));
+                    const rSnap = await getDocs(collection(db, `configuracoes/${anoAntigo}/regimes`));
+                    rSnap.forEach(async (docSnap) => await setDoc(doc(db, `configuracoes/${anoNovo}/regimes`, docSnap.id), docSnap.data()));
+                    const oSnap = await getDocs(collection(db, `configuracoes/${anoAntigo}/obrigacoes`));
+                    oSnap.forEach(async (docSnap) => await setDoc(doc(db, `configuracoes/${anoNovo}/obrigacoes`, docSnap.id), docSnap.data()));
+                    alert(`Ano ${anoNovo} estruturado com sucesso!`); 
+                } else { e.target.value = previousYear; }
+            } else { anoAtual = val; previousYear = val; loadDashboardData(); loadSettingsData(); }
+        });
+
+        // ================= CONFIGURAÇÕES =================
+        const obTipoSelect = document.getElementById('ob-tipo'), obDiaNumero = document.getElementById('ob-dia-numero'), obDiaData = document.getElementById('ob-dia-data');
+        obTipoSelect.addEventListener('change', (e) => { obDiaNumero.style.display = (e.target.value === 'MENSAL') ? 'block' : 'none'; obDiaData.style.display = (e.target.value === 'ANUAL') ? 'block' : 'none'; });
+        const editObTipoSelect = document.getElementById('edit-ob-tipo'), editObDiaNumero = document.getElementById('edit-ob-dia-numero'), editObDiaData = document.getElementById('edit-ob-dia-data');
+        editObTipoSelect.addEventListener('change', (e) => { editObDiaNumero.style.display = (e.target.value === 'MENSAL') ? 'block' : 'none'; editObDiaData.style.display = (e.target.value === 'ANUAL') ? 'block' : 'none'; });
+        function applyDateMask(e) { let v = e.target.value.replace(/\D/g,""); v = v.replace(/(\d{2})(\d)/,"$1/$2"); v = v.replace(/(\d{2})(\d)/,"$1/$2"); e.target.value = v; }
+        obDiaData.addEventListener('input', applyDateMask); editObDiaData.addEventListener('input', applyDateMask);
+
+        document.getElementById('btn-add-tipo').addEventListener('click', async () => {
+            const input = document.getElementById('tipo-mei-nome'); if(!input.value) return;
+            await addDoc(collection(db, `configuracoes/${anoAtual}/tipos_mei`), { nome: input.value.toUpperCase() }); input.value = '';
+        });
+        document.getElementById('btn-add-regime').addEventListener('click', async () => {
+            const input = document.getElementById('regime-nome'); if(!input.value) return;
+            await addDoc(collection(db, `configuracoes/${anoAtual}/regimes`), { nome: input.value.toUpperCase() }); input.value = '';
+        });
+        document.getElementById('btn-add-obrigacao').addEventListener('click', async () => {
+            const nome = document.getElementById('ob-nome').value.toUpperCase(); const tipo = obTipoSelect.value;
+            let dia = null, dataFixa = null;
+            if (tipo === 'MENSAL') dia = parseInt(obDiaNumero.value) || null; if (tipo === 'ANUAL') dataFixa = obDiaData.value;
+            if(!nome) return alert("Nome obrigatório");
+            await addDoc(collection(db, `configuracoes/${anoAtual}/obrigacoes`), { nome, tipo, dia, dataFixa });
+            document.getElementById('ob-nome').value = ''; obDiaNumero.value = ''; obDiaData.value = '';
+        });
+
+        function loadSettingsData() {
+            onSnapshot(collection(db, `configuracoes/${anoAtual}/tipos_mei`), (snapshot) => {
+                const lista = document.getElementById('lista-tipos-mei'); lista.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const div = document.createElement('div'); div.className = 'list-item';
+                    div.innerHTML = `<span>${data.nome}</span> <div class="list-actions"><button class="small secondary" onclick="openEditGeneric('tipo', '${docSnap.id}', '${data.nome}')">✏️</button><button class="small danger" onclick="deleteGeneric('tipo', '${docSnap.id}')">🗑️</button></div>`;
+                    lista.appendChild(div);
+                });
+            });
+
+            onSnapshot(collection(db, `configuracoes/${anoAtual}/regimes`), (snapshot) => {
+                const lista = document.getElementById('lista-regimes'); lista.innerHTML = '';
+                const selectCli = document.getElementById('cli-regime');
+                const selectEditCli = document.getElementById('edit-cli-regime');
+                selectCli.innerHTML = '<option value="">Regime (Obrigatório)...</option>'; selectEditCli.innerHTML = '<option value="">Regime (Obrigatório)...</option>';
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const div = document.createElement('div'); div.className = 'list-item';
+                    div.innerHTML = `<span>${data.nome}</span> <div class="list-actions"><button class="small secondary" onclick="openEditGeneric('regime', '${docSnap.id}', '${data.nome}')">✏️</button><button class="small danger" onclick="deleteGeneric('regime', '${docSnap.id}')">🗑️</button></div>`;
+                    lista.appendChild(div);
+
+                    const opt = document.createElement('option'); opt.value = data.nome; opt.text = data.nome;
+                    selectCli.appendChild(opt.cloneNode(true)); selectEditCli.appendChild(opt);
+                });
+            });
+
+            onSnapshot(collection(db, `configuracoes/${anoAtual}/obrigacoes`), (snapshot) => {
+                const lista = document.getElementById('lista-obrigacoes'); lista.innerHTML = '';
+                const selectAdd = document.getElementById('select-add-ob');
+                selectAdd.innerHTML = '<option value="">Selecione uma obrigação...</option>';
+                
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    let desc = data.tipo;
+                    if(data.tipo === 'MENSAL') desc += ` - Dia ${data.dia}`;
+                    if(data.tipo === 'ANUAL') desc += ` - ${data.dataFixa}`;
+                    const div = document.createElement('div'); div.className = 'list-item';
+                    div.innerHTML = `<span><b>${data.nome}</b> <span style="color:var(--text-muted);font-size:11px;">(${desc})</span></span> <div class="list-actions"><button class="small secondary" onclick="openEditObrigacao('${docSnap.id}', '${data.nome}', '${data.tipo}', '${data.dia||''}', '${data.dataFixa||''}')">✏️</button><button class="small danger" onclick="deleteObrigacao('${docSnap.id}')">🗑️</button></div>`;
+                    lista.appendChild(div);
+
+                    const opt = document.createElement('option'); opt.value = docSnap.id; opt.text = `${data.nome} (${desc})`;
+                    selectAdd.appendChild(opt);
+                });
+            });
+        }
+
+        window.openEditGeneric = (type, id, nome) => { 
+            document.getElementById('edit-generic-type').value = type;
+            document.getElementById('modal-title-generic').innerText = type === 'tipo' ? 'Editar Tipo' : 'Editar Regime';
+            document.getElementById('edit-generic-id').value = id; 
+            document.getElementById('edit-generic-nome').value = nome; 
+            document.getElementById('modal-tipo').classList.add('active'); 
+        };
+        window.openEditObrigacao = (id, nome, tipo, dia, dataFixa) => {
+            document.getElementById('edit-ob-id').value = id; document.getElementById('edit-ob-nome').value = nome;
+            editObTipoSelect.value = tipo; editObTipoSelect.dispatchEvent(new Event('change'));
+            if(tipo === 'MENSAL') editObDiaNumero.value = dia; if(tipo === 'ANUAL') editObDiaData.value = dataFixa;
+            document.getElementById('modal-obrigacao').classList.add('active');
+        };
+        window.deleteGeneric = async (type, id) => { 
+            const coll = type === 'tipo' ? 'tipos_mei' : 'regimes';
+            if(confirm("Confirmar exclusão?")) await deleteDoc(doc(db, `configuracoes/${anoAtual}/${coll}`, id)); 
+        };
+        window.deleteObrigacao = async (id) => { if(confirm("Excluir obrigação?")) await deleteDoc(doc(db, `configuracoes/${anoAtual}/obrigacoes`, id)); };
+        document.getElementById('btn-save-edit-generic').addEventListener('click', async () => {
+            const type = document.getElementById('edit-generic-type').value;
+            const coll = type === 'tipo' ? 'tipos_mei' : 'regimes';
+            const id = document.getElementById('edit-generic-id').value; 
+            const nome = document.getElementById('edit-generic-nome').value.toUpperCase();
+            if(nome) { await updateDoc(doc(db, `configuracoes/${anoAtual}/${coll}`, id), { nome }); closeModals(); }
+        });
+        document.getElementById('btn-save-edit-ob').addEventListener('click', async () => {
+            const id = document.getElementById('edit-ob-id').value; const nome = document.getElementById('edit-ob-nome').value.toUpperCase(); const tipo = editObTipoSelect.value;
+            let dia = null, dataFixa = null;
+            if (tipo === 'MENSAL') dia = parseInt(editObDiaNumero.value) || null; if (tipo === 'ANUAL') dataFixa = editObDiaData.value;
+            if(nome) { await updateDoc(doc(db, `configuracoes/${anoAtual}/obrigacoes`, id), { nome, tipo, dia, dataFixa }); closeModals(); }
+        });
+
+        // ================= DASHBOARD E CLIENTES =================
+        document.getElementById('btn-add-client').addEventListener('click', async () => {
+            const cnpj = document.getElementById('cli-cnpj').value;
+            const nome = document.getElementById('cli-nome').value.toUpperCase();
+            const regime = document.getElementById('cli-regime').value;
+            const wpp = document.getElementById('cli-wpp').value;
+            const dataInicio = document.getElementById('cli-data').value;
+            if(!cnpj || !nome || !regime) return alert("CNPJ, Nome e Regime são obrigatórios.");
+            await addDoc(collection(db, "clientes"), { cnpj, nome, regime, whatsapp: wpp, dataInicio, dataInclusao: new Date().getTime(), periodos: {} });
+            document.getElementById('cli-cnpj').value = ''; document.getElementById('cli-nome').value = ''; 
+            document.getElementById('cli-regime').value = ''; document.getElementById('cli-wpp').value = ''; 
+            document.getElementById('cli-data').value = '';
+        });
+
+        function loadDashboardData() {
+            onSnapshot(collection(db, "clientes"), async (snapshot) => {
+                let tempClientes = [];
+                snapshot.forEach(docSnap => { tempClientes.push({ id: docSnap.id, ...docSnap.data() }); });
+                
+                for(let cli of tempClientes) {
+                    const notasSnap = await getDocs(collection(db, "clientes", cli.id, "notas"));
+                    cli.hasPendingNotes = false;
+                    notasSnap.forEach(n => {
+                        const nData = n.data();
+                        if(!nData.fixa && nData.concluida === false) cli.hasPendingNotes = true;
+                    });
+                }
+
+                globalClientes = tempClientes;
+                checkAndSetInitialPeriod(); 
+                renderClientList(); renderUpcomingTasks();
+                if(currentClientId) renderClientObligations();
+            });
+
+            onSnapshot(collection(db, `configuracoes/${anoAtual}/obrigacoes`), (snapshot) => {
+                globalObrigacoes = [];
+                snapshot.forEach(docSnap => globalObrigacoes.push({ id: docSnap.id, ...docSnap.data() }));
+                renderClientList(); renderUpcomingTasks();
+                if(currentClientId) renderClientObligations();
+            });
+        }
+
+        function renderClientList() {
+            const list = document.getElementById('client-list'); 
+            list.innerHTML = ''; 
+            
+            const periodoAtual = document.getElementById('periodo-apuracao').value;
+            const [selYear, selMonth] = periodoAtual.split('-').map(Number);
+            const jsSelMonth = selMonth - 1;
+            
+            const clientesFiltrados = globalClientes.filter(data => {
+                if (data.mesBaixa && periodoAtual > data.mesBaixa) return false;
+                return true;
+            });
+            
+            const clientesOrdenados = [...clientesFiltrados].sort((a, b) => {
+                const aBaixado = a.mesBaixa && a.mesBaixa === periodoAtual;
+                const bBaixado = b.mesBaixa && b.mesBaixa === periodoAtual;
+                if (aBaixado && !bBaixado) return 1;
+                if (!aBaixado && bBaixado) return -1;
+                return a.nome.localeCompare(b.nome);
+            });
+
+            document.getElementById('client-counter').innerText = `(${clientesOrdenados.length} no período)`;
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+            clientesOrdenados.forEach(data => {
+                const card = document.createElement('div'); card.className = 'client-card';
+                
+                let dataIncStr = '--';
+                if(data.dataInclusao) {
+                    const d = new Date(data.dataInclusao);
+                    dataIncStr = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+                }
+
+                const obsPeriodo = getObrigacoesClientePeriodo(data, periodoAtual);
+                const keys = Object.keys(obsPeriodo);
+                
+                let temObrigacao = keys.length > 0;
+                let todasConcluidas = temObrigacao;
+                let temAtraso = false; let temHoje = false;
+
+                keys.forEach(obId => {
+                    const status = obsPeriodo[obId];
+                    const isConcluido = status === true || status?.concluido === true;
+                    if (!isConcluido) {
+                        todasConcluidas = false;
+                        const obDef = globalObrigacoes.find(o => o.id === obId);
+                        if (obDef) {
+                            let dateObj = null;
+                            if (obDef.tipo === 'MENSAL') dateObj = new Date(selYear, jsSelMonth + 1, obDef.dia);
+                            else if (obDef.tipo === 'ANUAL') {
+                                const parts = obDef.dataFixa.split('/');
+                                if (parts.length === 3) dateObj = new Date(parts[2], parts[1]-1, parts[0]);
+                            }
+
+                            if (dateObj) {
+                                if (dateObj < hoje) temAtraso = true;
+                                else if (dateObj.getTime() === hoje.getTime()) temHoje = true;
+                            }
+                        }
+                    }
+                });
+
+                if (temAtraso) card.classList.add('atrasado');
+                else if (temHoje || data.hasPendingNotes) card.classList.add('hoje');
+                else if (temObrigacao && todasConcluidas) card.classList.add('concluido');
+
+                let badgeBaixado = "";
+                if (data.mesBaixa) badgeBaixado = `<span class="badge-baixado">BAIXADO</span>`;
+                let badgeNota = data.hasPendingNotes ? `<span style="font-size:12px; margin-left: 5px;" title="Anotação Pendente">📝</span>` : "";
+
+                card.innerHTML = `
+                    <span class="date-inc">${dataIncStr}</span>
+                    <h4>${data.nome} ${badgeBaixado} ${badgeNota}</h4>
+                    <p>CNPJ: ${data.cnpj}</p>
+                    <p style="color:var(--text-muted); font-size: 11px; margin-top:2px;">Regime: <b>${data.regime || 'Não inf.'}</b></p>
+                    <p style="color:var(--text-muted); font-size: 11px; margin-top:2px;">WPP: ${data.whatsapp || 'Não inf.'}</p>
+                `;
+                card.onclick = () => { openClientScreen(data.id); };
+                list.appendChild(card);
+            });
+        }
+
+        // ================= EDIÇÃO E EXCLUSÃO DO CLIENTE =================
+        window.openEditClient = () => {
+            const cData = globalClientes.find(c => c.id === currentClientId);
+            if(!cData) return;
+            document.getElementById('edit-cli-cnpj').value = cData.cnpj || '';
+            document.getElementById('edit-cli-nome').value = cData.nome || '';
+            document.getElementById('edit-cli-regime').value = cData.regime || '';
+            document.getElementById('edit-cli-wpp').value = cData.whatsapp || '';
+            document.getElementById('edit-cli-data').value = cData.dataInicio || '';
+            document.getElementById('modal-client').classList.add('active');
+        };
+
+        document.getElementById('btn-save-edit-client').addEventListener('click', async () => {
+            const cnpj = document.getElementById('edit-cli-cnpj').value;
+            const nome = document.getElementById('edit-cli-nome').value.toUpperCase();
+            const regime = document.getElementById('edit-cli-regime').value;
+            const wpp = document.getElementById('edit-cli-wpp').value;
+            const dataInicio = document.getElementById('edit-cli-data').value;
+            if(!cnpj || !nome || !regime) return alert("CNPJ, Nome e Regime são obrigatórios.");
+            
+            await updateDoc(doc(db, "clientes", currentClientId), { cnpj, nome, regime, whatsapp: wpp, dataInicio });
+            document.getElementById('page-title').innerText = `Cliente: ${nome}`;
+            const cnpjNumEl = document.getElementById('client-cnpj-num');
+            if (cnpjNumEl) cnpjNumEl.innerText = cnpj;
+            closeModals();
+        });
+
+        window.deleteClient = async () => {
+            if(confirm("ATENÇÃO: Deseja excluir definitivamente este cliente? O histórico será perdido.")) {
+                await deleteDoc(doc(db, "clientes", currentClientId));
+                navigate('main-screen', document.querySelector('.menu-item'));
+            }
+        };
+
+        window.toggleBaixaClient = async () => {
+            const cData = globalClientes.find(c => c.id === currentClientId);
+            if(!cData) return;
+            const periodo = document.getElementById('periodo-apuracao').value;
+
+            if (cData.mesBaixa) {
+                if(confirm("Deseja reativar este CNPJ e anular a baixa?")) {
+                    await updateDoc(doc(db, "clientes", currentClientId), { mesBaixa: deleteField() });
+                }
+            } else {
+                if(confirm(`Deseja baixar este CNPJ a partir do mês de apuração selecionado (${periodo})? Ele não aparecerá nos meses seguintes.`)) {
+                    await updateDoc(doc(db, "clientes", currentClientId), { mesBaixa: periodo });
+                    navigate('main-screen', document.querySelector('.menu-item'));
+                }
+            }
+        };
+
+        // ================= VINCULO DE OBRIGAÇÕES =================
+        document.getElementById('btn-add-ob-client').addEventListener('click', async () => {
+            if(!currentClientId) return;
+            const obId = document.getElementById('select-add-ob').value;
+            if(!obId) return alert("Selecione uma obrigação.");
+            const periodo = document.getElementById('periodo-apuracao').value;
+            await updateDoc(doc(db, "clientes", currentClientId), { [`periodos.${periodo}.${obId}`]: false });
+            document.getElementById('select-add-ob').value = '';
+        });
+
+        window.removeObClient = async (obId) => {
+            if(!currentClientId) return;
+            if(confirm("Remover esta obrigação do cliente neste mês?")) {
+                const periodo = document.getElementById('periodo-apuracao').value;
+                const obRef = globalObrigacoes.find(g => g.id === obId);
+                if (obRef && isObrigacaoAutomaticaNoPeriodo(obRef, periodo)) {
+                    await updateDoc(doc(db, "clientes", currentClientId), { [`periodos.${periodo}.${obId}`]: { removido: true } });
+                } else {
+                    await updateDoc(doc(db, "clientes", currentClientId), { [`periodos.${periodo}.${obId}`]: deleteField() });
+                }
+            }
+        }
+
+        // ================= TELA DO CLIENTE =================
+        function openClientScreen(clientId) {
+            currentClientId = clientId;
+            const cData = globalClientes.find(c => c.id === currentClientId);
+            document.getElementById('page-title').innerText = `Cliente: ${cData.nome}`;
+            
+            const cnpjInfoEl = document.getElementById('client-info-cnpj');
+            cnpjInfoEl.innerHTML = `📄 CNPJ: <span id="client-cnpj-num" style="cursor: pointer; text-decoration: underline;" title="Clique para copiar o CNPJ">${cData.cnpj}</span>`;
+            document.getElementById('client-cnpj-num').addEventListener('click', async () => {
+                const cliAtual = globalClientes.find(c => c.id === currentClientId);
+                const cnpjTexto = (cliAtual ? cliAtual.cnpj : cData.cnpj).trim();
+                await copyTextToClipboard(cnpjTexto);
+                showToast(`CNPJ copiado: ${cnpjTexto}`);
+            });
+            let dataInicioStr = "Não informada";
+            if (cData.dataInicio) {
+                const [ano, mes, dia] = cData.dataInicio.split('-'); dataInicioStr = `${dia}/${mes}/${ano}`;
+            }
+            document.getElementById('client-info-data').innerText = `📅 Início: ${dataInicioStr}`;
+
+            const btnBaixa = document.getElementById('btn-toggle-baixa');
+            if(cData.mesBaixa) {
+                btnBaixa.innerText = "✅ Reativar CNPJ"; btnBaixa.className = "success small";
+            } else {
+                btnBaixa.innerText = "🛑 Baixar CNPJ"; btnBaixa.className = "warning small";
+            }
+
+            navigate('client-screen');
+            renderClientObligations();
+
+            document.getElementById('nota-fixa-edit-id').value = '';
+            document.getElementById('nota-fixa-texto').value = '';
+            document.getElementById('btn-add-nota-fixa').innerText = 'Fixar';
+            document.getElementById('nota-edit-id').value = '';
+            document.getElementById('nota-texto').value = '';
+            document.getElementById('btn-add-nota').innerText = 'Registrar';
+
+            if (window._unsubscribeClientNotas) window._unsubscribeClientNotas();
+            window._unsubscribeClientNotas = onSnapshot(collection(db, "clientes", clientId, "notas"), (snapshot) => {
+                const todasNotas = [];
+                snapshot.forEach(docSnap => todasNotas.push({ id: docSnap.id, ...docSnap.data() }));
+
+                const notasFixas = todasNotas.filter(n => n.fixa === true).sort((a, b) => (b.dataCriacao || 0) - (a.dataCriacao || 0));
+                const notasComuns = todasNotas.filter(n => !n.fixa).sort((a, b) => {
+                    if (a.concluida === b.concluida) return (b.dataCriacao || 0) - (a.dataCriacao || 0);
+                    return a.concluida ? 1 : -1;
+                });
+
+                const nfCont = document.getElementById('client-notas-fixas');
+                nfCont.innerHTML = '';
+                if (notasFixas.length === 0) {
+                    nfCont.innerHTML = '<p style="font-size:12px;">Nenhuma informação essencial fixa cadastrada.</p>';
+                } else {
+                    notasFixas.forEach(nota => {
+                        const card = document.createElement('div');
+                        card.className = 'note-card fixa';
+                        const textoSafe = (nota.texto || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, " ");
+                        card.innerHTML = `<div style="line-height: 1.4;">📌 ${nota.texto}</div>
+                            <div class="note-actions" style="justify-content: flex-end;">
+                                <div style="display:flex;gap:5px;">
+                                    <button class="small secondary" onclick="editNotaFixa('${nota.id}', '${textoSafe}')">Editar</button>
+                                    <button class="small danger" onclick="deleteNota('${nota.id}')">Excluir</button>
+                                </div>
+                            </div>`;
+                        nfCont.appendChild(card);
+                    });
+                }
+
+                const nCont = document.getElementById('client-notas');
+                nCont.innerHTML = '';
+                if (notasComuns.length === 0) {
+                    nCont.innerHTML = '<p style="font-size:12px;">Nenhuma anotação registrada.</p>';
+                } else {
+                    notasComuns.forEach(nota => {
+                        const card = document.createElement('div');
+                        card.className = `note-card ${nota.concluida ? 'concluida' : ''}`;
+                        const textoSafe = (nota.texto || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, " ");
+                        card.innerHTML = `<div style="line-height: 1.4;">${nota.texto}</div>
+                            <div class="note-actions">
+                                <label style="display:flex; align-items:center; cursor:pointer; font-weight:600;"><input type="checkbox" ${nota.concluida ? 'checked' : ''} onchange="toggleNotaCompleta('${nota.id}', this.checked)" style="width:14px;height:14px;margin:0 6px 0 0;"> Concluído</label>
+                                <div style="display:flex;gap:5px;">
+                                    <button class="small secondary" onclick="editNota('${nota.id}', '${textoSafe}')">Editar</button>
+                                    <button class="small danger" onclick="deleteNota('${nota.id}')">Excluir</button>
+                                </div>
+                            </div>`;
+                        nCont.appendChild(card);
+                    });
+                }
+            });
+        }
+
+        function renderClientObligations() {
+            if(!currentClientId) return;
+            const clientData = globalClientes.find(c => c.id === currentClientId);
+            if(!clientData) return;
+
+            const periodo = document.getElementById('periodo-apuracao').value;
+            const [y, m] = periodo.split('-');
+            document.getElementById('client-month-label').innerText = `${m}/${y}`;
+
+            const obContainer = document.getElementById('client-obrigacoes'); 
+            obContainer.innerHTML = '';
+            
+            const obsPeriodo = getObrigacoesClientePeriodo(clientData, periodo);
+            if(Object.keys(obsPeriodo).length === 0) {
+                obContainer.innerHTML = '<p style="font-size:12px;">Nenhuma obrigação vinculada neste período.</p>'; return;
+            }
+
+            Object.keys(obsPeriodo).forEach(obId => {
+                const obRef = globalObrigacoes.find(g => g.id === obId);
+                if(!obRef) return; 
+
+                const statusObj = obsPeriodo[obId];
+                const isConcluido = statusObj === true || statusObj?.concluido === true;
+                
+                const div = document.createElement('div'); div.className = `check-item ${isConcluido ? 'concluido' : ''}`;
+                const leftDiv = document.createElement('div'); leftDiv.className = 'check-left';
+                
+                const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = isConcluido;
+                cb.addEventListener('change', (e) => {
+                    e.preventDefault();
+                    if (e.target.checked) {
+                        e.target.checked = false; 
+                        pendingConclusao = { clientId: currentClientId, obId: obId, periodo: periodo };
+                        document.getElementById('data-realizado').value = new Date().toISOString().split('T')[0];
+                        document.getElementById('modal-conclusao').classList.add('active');
+                    } else {
+                        updateDoc(doc(db, "clientes", currentClientId), { [`periodos.${periodo}.${obId}`]: false });
+                    }
+                });
+                
+                const span = document.createElement('span'); 
+                let info = "";
+                if (obRef.tipo === 'MENSAL') {
+                    const dateObj = new Date(y, parseInt(m), obRef.dia);
+                    const vencStr = `${String(obRef.dia).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+                    info = `Vencimento: ${vencStr}`;
+                } else if (obRef.tipo === 'ANUAL') {
+                    info = `Vencimento: ${obRef.dataFixa}`;
+                }
+
+                let labelConclusao = "";
+                if (statusObj?.dataRealizado) {
+                    const [anoC, mesC, diaC] = statusObj.dataRealizado.split('-');
+                    labelConclusao = ` <span style="color:var(--success); font-size:11px; margin-left:8px; font-weight:bold;">(✓ Entregue em ${diaC}/${mesC}/${anoC})</span>`;
+                }
+                
+                span.innerHTML = `<strong>${obRef.nome}</strong> <small style="margin-left: 8px; color: var(--primary); font-weight: bold;">(${info})</small>${labelConclusao}`;
+                leftDiv.appendChild(cb); leftDiv.appendChild(span);
+                
+                const btnRemove = document.createElement('button');
+                btnRemove.className = 'small danger'; btnRemove.innerText = '✕'; btnRemove.style.padding = '4px 8px';
+                btnRemove.onclick = () => removeObClient(obId);
+
+                div.appendChild(leftDiv); div.appendChild(btnRemove); obContainer.appendChild(div);
+            });
+        }
+
+        // LÓGICA DO MODAL DE CONCLUSÃO
+        document.getElementById('btn-confirmar-conclusao').addEventListener('click', async () => {
+            if (!pendingConclusao) return;
+            const dataRealizado = document.getElementById('data-realizado').value;
+            if (!dataRealizado) return alert("Por favor, informe a data.");
+            
+            const { clientId, obId, periodo } = pendingConclusao;
+            await updateDoc(doc(db, "clientes", clientId), { 
+                [`periodos.${periodo}.${obId}`]: { concluido: true, dataRealizado: dataRealizado } 
+            });
+            
+            document.getElementById('modal-conclusao').classList.remove('active');
+            pendingConclusao = null;
+        });
+        window.cancelarConclusao = () => { document.getElementById('modal-conclusao').classList.remove('active'); pendingConclusao = null; }
+
+        // ================= PRÓXIMAS OBRIGAÇÕES =================
+        function renderUpcomingTasks() {
+            const container = document.getElementById('upcoming-tasks-list');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            const periodoVal = document.getElementById('periodo-apuracao').value; 
+            if(!periodoVal) return;
+            const [selYear, selMonth] = periodoVal.split('-').map(Number);
+            const jsSelMonth = selMonth - 1; 
+            
+            let pendencias = [];
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+            const activeClients = globalClientes.filter(data => {
+                if (data.mesBaixa && periodoVal > data.mesBaixa) return false;
+                return true;
+            });
+
+            activeClients.forEach(cli => {
+                const obsPeriodo = getObrigacoesClientePeriodo(cli, periodoVal);
+                
+                Object.keys(obsPeriodo).forEach(obId => {
+                    const status = obsPeriodo[obId];
+                    const isConcluido = status === true || status?.concluido === true;
+
+                    if (!isConcluido) { 
+                        const obDef = globalObrigacoes.find(o => o.id === obId);
+                        if(obDef && obDef.tipo !== 'NENHUM') {
+                            let dateObj = null; let overdue = false; let dateStr = "";
+
+                            if (obDef.tipo === 'MENSAL') {
+                                dateObj = new Date(selYear, jsSelMonth + 1, obDef.dia);
+                                if (dateObj < hoje) overdue = true;
+                                dateStr = `${String(obDef.dia).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+                            } else if (obDef.tipo === 'ANUAL') {
+                                const parts = obDef.dataFixa.split('/');
+                                if (parts.length === 3) {
+                                    dateObj = new Date(parts[2], parts[1]-1, parts[0]);
+                                    if (dateObj < hoje) overdue = true;
+                                    dateStr = obDef.dataFixa;
+                                }
+                            }
+                            if (dateObj) pendencias.push({ cliNome: cli.nome, obNome: obDef.nome, dateObj, dateStr, overdue });
+                        }
+                    }
+                });
+            });
+
+            pendencias.sort((a, b) => a.dateObj - b.dateObj);
+            if(pendencias.length === 0) { container.innerHTML = '<p>Nenhuma pendência para o período.</p>'; return; }
+
+            pendencias.forEach(p => {
+                const div = document.createElement('div'); div.className = `upcoming-item ${p.overdue ? 'overdue' : ''}`;
+                div.innerHTML = `<span class="cli-nome">${p.cliNome}</span><span class="ob-nome">${p.obNome}</span><span class="date-badge">${p.overdue ? 'Atrasado: ' : 'Vence em: '}${p.dateStr}</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        // ================= NOTAS E ANOTAÇÕES FIXAS =================
+        window.deleteNota = async (id) => { 
+            if(confirm("Excluir anotação?")) {
+                await deleteDoc(doc(db, "clientes", currentClientId, "notas", id)); 
+                await pingClientUpdate(currentClientId);
+            }
+        };
+        document.getElementById('btn-add-nota-fixa').addEventListener('click', async () => {
+            if(!currentClientId) return;
+            const input = document.getElementById('nota-fixa-texto');
+            const idInput = document.getElementById('nota-fixa-edit-id');
+            if(!input.value.trim()) return;
+            if(idInput.value) {
+                await updateDoc(doc(db, "clientes", currentClientId, "notas", idInput.value), { texto: input.value.trim(), fixa: true });
+                idInput.value = '';
+                document.getElementById('btn-add-nota-fixa').innerText = 'Fixar';
+            } else {
+                await addDoc(collection(db, "clientes", currentClientId, "notas"), { texto: input.value.trim(), fixa: true, dataCriacao: new Date().getTime() });
+            }
+            await pingClientUpdate(currentClientId);
+            input.value = '';
+        });
+        document.getElementById('nota-fixa-texto').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('btn-add-nota-fixa').click();
+        });
+        window.editNotaFixa = (id, texto) => {
+            document.getElementById('nota-fixa-edit-id').value = id;
+            document.getElementById('nota-fixa-texto').value = texto;
+            document.getElementById('btn-add-nota-fixa').innerText = 'Salvar';
+            document.getElementById('nota-fixa-texto').focus();
+        };
+        document.getElementById('btn-add-nota').addEventListener('click', async () => {
+            if(!currentClientId) return; const input = document.getElementById('nota-texto'); const idInput = document.getElementById('nota-edit-id');
+            if(!input.value.trim()) return;
+            if(idInput.value) { 
+                await updateDoc(doc(db, "clientes", currentClientId, "notas", idInput.value), { texto: input.value.trim() }); 
+                idInput.value = ''; 
+                document.getElementById('btn-add-nota').innerText = 'Registrar';
+            } else { 
+                await addDoc(collection(db, "clientes", currentClientId, "notas"), { texto: input.value.trim(), concluida: false, dataCriacao: new Date().getTime() }); 
+            }
+            await pingClientUpdate(currentClientId);
+            input.value = '';
+        });
+        document.getElementById('nota-texto').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('btn-add-nota').click();
+        });
+        window.editNota = (id, texto) => {
+            document.getElementById('nota-edit-id').value = id;
+            document.getElementById('nota-texto').value = texto;
+            document.getElementById('btn-add-nota').innerText = 'Salvar';
+            document.getElementById('nota-texto').focus();
+        };
+        window.toggleNotaCompleta = async (notaId, isConcluida) => { 
+            if(currentClientId) {
+                await updateDoc(doc(db, "clientes", currentClientId, "notas", notaId), { concluida: isConcluida }); 
+                await pingClientUpdate(currentClientId);
+            }
+        };
+        
+        document.querySelectorAll('.uppercase').forEach(inp => { inp.addEventListener('input', function() { this.value = this.value.toUpperCase(); }); });
+    </script>
+</body>
+</html>
