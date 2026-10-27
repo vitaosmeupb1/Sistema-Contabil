@@ -164,6 +164,114 @@
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { background-color: var(--sidebar-hover); color: var(--white); padding: 12px 18px; border-radius: 6px; font-weight: 500; font-size: 13px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); animation: slideIn 0.3s ease-in-out; border-left: 4px solid var(--warning); }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+
+        /* REDESIGN — interface contemporânea, mantendo intactos IDs e fluxos existentes */
+        :root {
+            --bg-body:#f3f6fc; --bg-sidebar:#10182b; --sidebar-hover:#1d2942;
+            --sidebar-text:#a5b1c7; --primary:#6258e8; --primary-hover:#4d43cf;
+            --text-dark:#182238; --text-muted:#71809a; --border:#e5eaf3;
+            --white:#fff; --success:#12a879; --warning:#e8a333; --danger:#e35b70;
+            --danger-hover:#cb3f58; --glow:rgba(98,88,232,.22);
+        }
+        body { background:var(--bg-body); font-size:14px; }
+        .sidebar { width:252px; background:linear-gradient(165deg,#111a30 0%,#161f39 55%,#211d47 100%); box-shadow:12px 0 38px rgba(20,28,50,.12); z-index:3; }
+        .sidebar.collapsed { margin-left:-252px; }
+        .sidebar-brand { min-height:78px; padding:22px 24px; font-size:18px; letter-spacing:-.4px; border-bottom-color:rgba(255,255,255,.08); }
+        .sidebar-brand span { display:grid; place-items:center; width:32px;height:32px;border-radius:11px;background:linear-gradient(135deg,#8c7cff,#5d59e9);color:white;font-size:19px;box-shadow:0 8px 20px rgba(98,88,232,.45); }
+        .sidebar-menu { padding:22px 13px; }
+        .menu-item { margin:5px 0;padding:13px 15px;border-radius:12px;border-left:0!important;transition:background .25s, transform .25s,color .25s; }
+        .menu-item:hover { transform:translateX(3px); background:rgba(255,255,255,.08); }
+        .menu-item.active { color:#fff;background:linear-gradient(100deg,rgba(109,98,239,.32),rgba(109,98,239,.08));box-shadow:inset 3px 0 #958cff; }
+        .sidebar-footer { padding:18px 13px 24px;border-top-color:rgba(255,255,255,.08); }
+        .main-wrapper { background:var(--bg-body); }
+        .topbar { height:76px;padding:0 32px;background:rgba(255,255,255,.86);backdrop-filter:blur(18px);border-bottom:1px solid rgba(226,232,240,.7); }
+        .topbar-title { font-size:18px;letter-spacing:-.4px; }
+        #btn-toggle-sidebar { width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#f2f3fb;color:#626b82; }
+        #btn-toggle-sidebar:hover { background:#e9e7ff;color:var(--primary); }
+        .main-content { padding:30px 34px 42px; }
+        .screen { max-width:1440px; }
+        .screen.active { animation:screenEnter .55s cubic-bezier(.2,.8,.2,1) both; }
+        @keyframes screenEnter { from{opacity:0;transform:translateY(14px) scale(.994);filter:blur(3px)} to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)} }
+        h1,h2,h3,h4 { letter-spacing:-.35px; }
+        h3 { font-size:16px; }
+        p { font-size:13px; }
+        input,select { padding:11px 13px;margin-bottom:13px;border-radius:10px;border-color:#e3e8f1;background:#f9faff;font-size:13px;transition:border-color .2s,box-shadow .2s,transform .2s; }
+        input:focus,select:focus { border-color:#8279f3;box-shadow:0 0 0 4px rgba(98,88,232,.12);transform:translateY(-1px); }
+        button { padding:10px 16px;border-radius:10px;font-size:12px;background:linear-gradient(135deg,#7065f0,#574de0);box-shadow:0 5px 12px rgba(98,88,232,.16);transition:transform .22s,box-shadow .22s,filter .22s; }
+        button:hover { background:linear-gradient(135deg,#6258e8,#4d43cf);transform:translateY(-2px);box-shadow:0 9px 20px rgba(98,88,232,.23); }
+        button.secondary { background:#fff;box-shadow:none; }
+        button.secondary:hover { background:#f4f3ff; }
+        button.danger,button.warning,button.success { box-shadow:none; }
+        .panel { padding:23px;border-radius:17px;margin-bottom:20px;border:1px solid rgba(226,232,240,.9);box-shadow:0 8px 24px rgba(26,39,70,.045);transition:transform .28s,box-shadow .28s; }
+        .panel:hover { box-shadow:0 13px 32px rgba(26,39,70,.075); }
+        .panel-header { padding-bottom:15px;margin-bottom:18px;border-bottom-color:#edf0f6; }
+        .dashboard-layout { grid-template-columns:minmax(0,1fr) 330px;gap:22px; }
+        .client-card { padding:19px;border-radius:15px;border-color:#e8ebf3;gap:7px;box-shadow:0 3px 10px rgba(26,39,70,.025);animation:cardPop .5s both; }
+        .client-card:hover { transform:translateY(-5px);box-shadow:0 14px 30px rgba(57,63,120,.11); }
+        @keyframes cardPop { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .client-card h4 { color:#5149c8;font-size:15px; }
+        .client-card.concluido,.client-card.atrasado,.client-card.hoje { background-color:#fff; }
+        .upcoming-item { padding:15px;border-radius:12px;background:#f7f8fd;transition:transform .2s,background .2s; }
+        .upcoming-item:hover { transform:translateX(3px);background:#f0efff; }
+        .list-item,.check-item { padding:14px;border-radius:10px; }
+        .check-item { margin-bottom:10px; }
+        .note-card { padding:15px;border-radius:12px; }
+        .modal-overlay { background:rgba(13,19,38,.58);backdrop-filter:blur(8px); }
+        .modal-content { padding:27px;border-radius:18px;box-shadow:0 28px 90px rgba(13,19,38,.23);animation:modalRise .3s cubic-bezier(.2,.8,.2,1); }
+        @keyframes modalRise { from{opacity:0;transform:translateY(16px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+        .toast { border-radius:12px;box-shadow:0 12px 35px rgba(10,20,40,.2); }
+
+        /* Ecrã de acesso: gradientes vivos e elementos em movimento contínuo */
+        #app-container.login-mode { position:relative;overflow:hidden;background:radial-gradient(ellipse at 16% 18%,#393a80 0%,transparent 42%),radial-gradient(ellipse at 88% 82%,#332b70 0%,transparent 44%),linear-gradient(135deg,#10162b,#171936 55%,#22204c); }
+        #app-container.login-mode::before,#app-container.login-mode::after { content:"";position:absolute;pointer-events:none;border-radius:50%;filter:blur(2px); }
+        #app-container.login-mode::before { width:460px;height:460px;left:-140px;bottom:-190px;border:1px solid rgba(157,151,255,.18);box-shadow:0 0 0 35px rgba(157,151,255,.035),0 0 0 80px rgba(157,151,255,.025);animation:orbit 18s linear infinite; }
+        #app-container.login-mode::after { width:360px;height:360px;right:-90px;top:-125px;background:linear-gradient(135deg,rgba(112,101,240,.22),rgba(47,208,204,.09));animation:floatGlow 9s ease-in-out infinite alternate; }
+        @keyframes orbit { to{transform:rotate(360deg)} }
+        @keyframes floatGlow { from{transform:translate(0,0) scale(.92);opacity:.65} to{transform:translate(-32px,26px) scale(1.12);opacity:1} }
+        #app-container.login-mode .main-wrapper { position:relative;z-index:1;background:transparent; }
+        #app-container.login-mode .main-content { width:100%;padding:28px; }
+        #login-screen { position:relative;max-width:1040px;min-height:560px;border-radius:28px;background:rgba(255,255,255,.97);box-shadow:0 35px 110px rgba(0,0,0,.35); }
+        #login-screen::before { content:"";position:absolute;z-index:0;width:390px;height:390px;left:7%;top:5%;border:1px solid rgba(255,255,255,.16);border-radius:50%;box-shadow:0 0 0 32px rgba(255,255,255,.035),0 0 0 72px rgba(255,255,255,.025);animation:orbit 28s linear infinite;pointer-events:none; }
+        .login-left { position:relative;overflow:hidden;flex:1.05;padding:64px;background:radial-gradient(circle at 80% 20%,rgba(118,221,222,.26),transparent 30%),linear-gradient(145deg,#5c54db 0%,#393b9d 50%,#202b62 100%); }
+        .login-left::after { content:"✦";position:absolute;right:42px;bottom:10px;color:rgba(255,255,255,.11);font-size:180px;line-height:1;animation:starFloat 5s ease-in-out infinite; }
+        @keyframes starFloat { 0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-18px) rotate(8deg)} }
+        .login-left h1 { position:relative;z-index:1;font-size:38px;line-height:1.12;margin-bottom:18px;letter-spacing:-1.3px; }
+        .login-left p { position:relative;z-index:1;max-width:340px;color:rgba(255,255,255,.8);font-size:15px;line-height:1.8; }
+        .login-right { position:relative;z-index:1;padding:68px 64px; }
+        .login-right h2 { font-size:27px;margin-bottom:9px;letter-spacing:-.8px; }
+        .login-right h2::after { content:"Aceda à sua área de gestão";display:block;margin-top:8px;color:var(--text-muted);font-size:13px;font-weight:400;letter-spacing:0; }
+        #login-screen input { height:49px;border-radius:12px;background:#f7f8fc;margin-bottom:16px;padding:0 15px; }
+        #login-screen input:first-of-type { margin-top:28px; }
+        #login-screen #btn-login { height:50px!important;border-radius:12px!important;font-size:14px!important;margin-top:8px!important; }
+        @media(max-width:1050px) { .dashboard-layout{grid-template-columns:1fr}.upcoming-list{max-height:360px} }
+        @media(max-width:700px) {
+            .sidebar{position:fixed;left:0;top:0;bottom:0;height:100dvh}.sidebar.collapsed{margin-left:-252px}
+            .topbar{height:64px;padding:0 16px}.main-content{padding:19px 15px 30px}
+            .panel{padding:17px;border-radius:14px}.dashboard-layout,.client-panels-grid{grid-template-columns:1fr}
+            #app-container.login-mode .main-content{padding:16px}
+            #login-screen{flex-direction:column;max-width:460px;min-height:0;border-radius:22px}
+            .login-left{padding:30px 28px;min-height:190px}.login-left h1{font-size:30px}.login-left p{font-size:13px;max-width:290px}
+            .login-left::after{font-size:120px;right:20px}.login-right{padding:32px 28px 36px}.login-right h2{font-size:24px}
+            .input-row{gap:4px}.input-row>*{min-width:100%!important}
+            .panel-header{align-items:flex-start;gap:12px;flex-wrap:wrap}
+        }
+        @media(prefers-reduced-motion:reduce) { *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important} }
+
+
+        /* Alternância entre grelha e lista de clientes */
+        #client-list.list-view { display:flex; flex-direction:column; gap:10px; }
+        #client-list.list-view .client-card { width:100%; min-height:0; display:grid; grid-template-columns:minmax(190px,1.4fr) minmax(120px,1fr) minmax(150px,1fr) minmax(130px,1fr); align-items:center; gap:8px 18px; padding:15px 19px; border-radius:13px; }
+        #client-list.list-view .client-card h4 { margin:0; padding-right:0; }
+        #client-list.list-view .client-card .date-inc { position:static; justify-self:end; grid-column:4; grid-row:1; }
+        #client-list.list-view .client-card p { margin:0!important; }
+        #btn-client-view { white-space:nowrap; }
+        @media(max-width:760px) {
+            #client-list.list-view .client-card { grid-template-columns:1fr 1fr; }
+            #client-list.list-view .client-card h4 { grid-column:1/-1; }
+            #client-list.list-view .client-card .date-inc { grid-column:2; grid-row:1; }
+        }
+
     </style>
 </head>
 <body>
@@ -241,7 +349,8 @@
                             <div class="panel">
                                 <div class="panel-header">
                                     <h3>Carteira de Clientes <span id="client-counter" style="font-weight: normal; font-size: 12px; color: var(--text-muted); margin-left: 5px;">(0 totais)</span></h3>
-                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                        <button type="button" id="btn-client-view" class="secondary" aria-pressed="false" title="Alternar para lista vertical">☷ Lista</button>
                                         <button type="button" id="btn-pgmei">PGMEI</button>
                                         <button type="button" id="btn-nfse">Emissor NFS-e</button>
                                     </div>
@@ -1360,6 +1469,25 @@
             }
         };
         
+
+        // Alterna a apresentação da carteira sem alterar os dados ou a lógica dos clientes.
+        const clientListView = document.getElementById('client-list');
+        const clientViewButton = document.getElementById('btn-client-view');
+        const savedClientView = localStorage.getItem('anjos-client-list-view');
+        if (savedClientView === 'list') clientListView.classList.add('list-view');
+        function updateClientViewButton() {
+            const isList = clientListView.classList.contains('list-view');
+            clientViewButton.innerText = isList ? '▦ Grelha' : '☷ Lista';
+            clientViewButton.title = isList ? 'Alternar para grelha' : 'Alternar para lista vertical';
+            clientViewButton.setAttribute('aria-pressed', String(isList));
+        }
+        updateClientViewButton();
+        clientViewButton.addEventListener('click', () => {
+            const isList = clientListView.classList.toggle('list-view');
+            localStorage.setItem('anjos-client-list-view', isList ? 'list' : 'grid');
+            updateClientViewButton();
+        });
+
         document.querySelectorAll('.uppercase').forEach(inp => { inp.addEventListener('input', function() { this.value = this.value.toUpperCase(); }); });
     </script>
 </body>
