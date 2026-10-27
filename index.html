@@ -510,10 +510,33 @@
             document.body.removeChild(tempInput);
         }
 
-        // LÓGICA DE OBRIGAÇÕES AUTOMÁTICAS (MENSAIS E ANUAIS) POR PERÍODO
-        function isObrigacaoAutomaticaNoPeriodo(ob, periodo) {
+        // LÓGICA DE OBRIGAÇÕES AUTOMÁTICAS (MENSAIS VINCULADAS AO CLIENTE E ANUAIS) POR PERÍODO
+        function getInicioVinculoMensalCliente(clientData, obId) {
+            if (!clientData) return null;
+            const vinculos = clientData.obrigacoesMensaisInicio || {};
+            if (vinculos[obId]) {
+                return vinculos[obId] === 'DESVINCULADO' ? null : vinculos[obId];
+            }
+            // Preserva histórico de clientes que já tinham essa obrigação registrada em algum período anterior
+            if (clientData.periodos) {
+                const periodosComOb = Object.keys(clientData.periodos).filter(p => {
+                    const val = clientData.periodos[p] && clientData.periodos[p][obId];
+                    return val !== undefined && !(val && val.removido === true);
+                }).sort();
+                if (periodosComOb.length > 0) {
+                    return periodosComOb[0];
+                }
+            }
+            return null;
+        }
+
+        function isObrigacaoAutomaticaNoPeriodo(ob, periodo, clientData = null) {
             if (!ob || !periodo) return false;
-            if (ob.tipo === 'MENSAL') return true;
+            if (ob.tipo === 'MENSAL') {
+                if (!clientData) return false;
+                const inicio = getInicioVinculoMensalCliente(clientData, ob.id);
+                return Boolean(inicio && periodo >= inicio);
+            }
             if (ob.tipo === 'ANUAL' && ob.dataFixa) {
                 const [selYear, selMonth] = periodo.split('-').map(Number);
                 const parts = ob.dataFixa.split('/').map(Number);
@@ -531,7 +554,7 @@
             const resultado = {};
 
             globalObrigacoes.forEach(ob => {
-                if (isObrigacaoAutomaticaNoPeriodo(ob, periodo)) {
+                if (isObrigacaoAutomaticaNoPeriodo(ob, periodo, clientData)) {
                     const salvo = obsSalvas[ob.id];
                     if (salvo && salvo.removido === true) return;
                     resultado[ob.id] = salvo !== undefined ? salvo : false;
@@ -1015,7 +1038,18 @@
             const obId = document.getElementById('select-add-ob').value;
             if(!obId) return alert("Selecione uma obrigação.");
             const periodo = document.getElementById('periodo-apuracao').value;
-            await updateDoc(doc(db, "clientes", currentClientId), { [`periodos.${periodo}.${obId}`]: false });
+            const cData = globalClientes.find(c => c.id === currentClientId);
+            const obRef = globalObrigacoes.find(g => g.id === obId);
+            const updates = { [`periodos.${periodo}.${obId}`]: false };
+
+            if (obRef && obRef.tipo === 'MENSAL') {
+                const inicioAtual = getInicioVinculoMensalCliente(cData, obId);
+                if (!inicioAtual || periodo < inicioAtual) {
+                    updates[`obrigacoesMensaisInicio.${obId}`] = periodo;
+                }
+            }
+
+            await updateDoc(doc(db, "clientes", currentClientId), updates);
             document.getElementById('select-add-ob').value = '';
         });
 
@@ -1023,8 +1057,9 @@
             if(!currentClientId) return;
             if(confirm("Remover esta obrigação do cliente neste mês?")) {
                 const periodo = document.getElementById('periodo-apuracao').value;
+                const cData = globalClientes.find(c => c.id === currentClientId);
                 const obRef = globalObrigacoes.find(g => g.id === obId);
-                if (obRef && isObrigacaoAutomaticaNoPeriodo(obRef, periodo)) {
+                if (obRef && isObrigacaoAutomaticaNoPeriodo(obRef, periodo, cData)) {
                     await updateDoc(doc(db, "clientes", currentClientId), { [`periodos.${periodo}.${obId}`]: { removido: true } });
                 } else {
                     await updateDoc(doc(db, "clientes", currentClientId), { [`periodos.${periodo}.${obId}`]: deleteField() });
